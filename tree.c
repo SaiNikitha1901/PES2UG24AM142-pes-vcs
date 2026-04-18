@@ -180,3 +180,37 @@ int head_update(const ObjectID *new_commit) {
     return rename(tmp_path, target_path);
 }
  
+// ─── TODO: Implement these ───────────────────────────────────────────────────
+ 
+// Forward declaration
+extern int tree_from_index(ObjectID *id_out);
+ 
+// Create a new commit from the current staging area.
+//
+// HINTS - Useful functions to call:
+//   - tree_from_index   : writes the directory tree and gets the root hash
+//   - head_read         : gets the parent commit hash (if any)
+//   - pes_author        : retrieves the author name string (from pes.h)
+//   - time(NULL)        : gets the current unix timestamp
+//   - commit_serialize  : converts the filled Commit struct to a text buffer
+//   - object_write      : saves the serialized text as OBJ_COMMIT
+//   - head_update       : moves the branch pointer to your new commit
+//
+// Returns 0 on success, -1 on error.
+int commit_create(const char *message, ObjectID *commit_id_out) {
+    Commit commit;
+    memset(&commit, 0, sizeof(commit));
+    
+    // Step 1: Build tree from index
+    if (tree_from_index(&commit.tree) != 0) {
+        return -1;
+    }
+    
+    // Step 2: Get parent commit (if exists)
+    ObjectID parent_id;
+    if (head_read(&parent_id) == 0) {
+        commit.has_parent = 1;
+        commit.parent = parent_id;
+    } else {
+        commit.has_parent = 0;
+    }
