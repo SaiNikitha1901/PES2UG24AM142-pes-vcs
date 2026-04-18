@@ -10,7 +10,7 @@
 ### .env
 This file contains the `PES_AUTHOR` environment variable required by the assignment:
 ```
-PES_AUTHOR="Sai Nikitha <PES2UG24AM142>"
+PES_AUTHOR="Sai Nikitha Perumalla<PES2UG24AM142>"
 ```
 
 **Purpose:** The README specifies that PES-VCS reads the author name from the `PES_AUTHOR` environment variable. This file provides a convenient way to set this variable before running commands.
