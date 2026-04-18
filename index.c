@@ -146,3 +146,43 @@ int index_load(Index *index) {
     return 0;
 }
  
+ 
+static int cmp_entries(const void *a, const void *b) {
+    return strcmp(((const IndexEntry *)a)->path, ((const IndexEntry *)b)->path);
+}
+ 
+int index_save(const Index *index) {
+    char tmp_path[256];
+    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", INDEX_FILE);
+ 
+    FILE *f = fopen(tmp_path, "w");
+    if (!f) return -1;
+ 
+    Index *sorted = malloc(sizeof(Index));
+    if (!sorted) { fclose(f); return -1; }
+    *sorted = *index;
+    qsort(sorted->entries, sorted->count, sizeof(IndexEntry), cmp_entries);
+ 
+    for (int i = 0; i < sorted->count; i++) {
+        const IndexEntry *e = &sorted->entries[i];
+        char hex[HASH_HEX_SIZE + 1];
+        hash_to_hex(&e->hash, hex);
+        fprintf(f, "%o %s %llu %u %s\n",
+                e->mode, hex,
+                (unsigned long long)e->mtime_sec,
+                (unsigned int)e->size,
+                e->path);
+    }
+ 
+    free(sorted);
+    fflush(f);
+    fsync(fileno(f));
+    fclose(f);
+ 
+    if (rename(tmp_path, INDEX_FILE) != 0) {
+        unlink(tmp_path);
+        return -1;
+    }
+    return 0;
+}
+ 
